@@ -816,6 +816,9 @@ function This_MOD.button_action(Data)
         --- Crear un nuevo canal
         local Channel = This_MOD.get_channel(Data)
 
+        --- Cambiar el canal
+        This_MOD.set_channel(Data.Node, Channel)
+
         --- Actualizar el GUI
         local Dropdown = Data.GUI.dropdown_channels
         Dropdown.add_item(Channel.name)
