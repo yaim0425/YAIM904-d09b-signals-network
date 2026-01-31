@@ -1,12 +1,14 @@
 # YAIM904 d09b – Signals Network 📡🔗
 
+---
+
 ## 📦 Description
 
 **YAIM904 d09b – Signals Network** introduces a global circuit network that allows **signals to be sent and received instantly from anywhere to anywhere**.
 
-Signals can travel across **unlimited distances**, **between surfaces**, and even **between planets**, removing all physical restrictions normally present in circuit networks.
+Signals can travel across **unlimited distances**, **between surfaces** and even **between planets**, removing all physical restrictions normally present in circuit networks.
 
-This MOD is designed for advanced automation, testing, and extreme logistics scenarios.
+This MOD is designed for advanced automation, testing and extreme logistics scenarios.
 
 ---
 
@@ -52,7 +54,7 @@ Signals behave exactly like standard circuit network signals, just without dista
 
 ## ❤️ Support
 
-Suggestions, ideas, and balance feedback are welcome on the GitHub repository.
+Suggestions, ideas and balance feedback are welcome on the GitHub repository.
 
 ---
 
