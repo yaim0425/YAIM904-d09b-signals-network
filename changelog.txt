@@ -3,6 +3,7 @@ Version: 0.0.3
 Date: 2026-02-28
   Info:
     - Improved antenna view in the GUI
+    - Improvement for working with many antennas and many players
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.2
 Date: 2026-01-31

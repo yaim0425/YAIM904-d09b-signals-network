@@ -51,6 +51,9 @@ function This_MOD.reference_values()
     --- Nombre del combinador
     This_MOD.combinator_name = This_MOD.prefix .. GMOD.entities["decider-combinator"].name
 
+    --- Antenas a revisar por tick
+    This_MOD.check_per_tick = 2
+
     --- Configuración de la superficie
     This_MOD.map_gen_settings = {
         width = 1,
@@ -1231,28 +1234,40 @@ function This_MOD.check_power()
     --- Validar cada antena
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
-    for _, gForce in pairs(This_MOD.create_data().gForces) do
-        --- Antenas a eliminar
-        local Deleted = {}
+    --- Variable a usar
+    local Data = This_MOD.create_data()
+    local Deleted = {}
 
-        --- Validar cada antena
-        for key, node in pairs(gForce.nodes or {}) do
-            if node.entity and node.entity.valid then
-                check_power(node)
-            else
-                table.insert(Deleted, 1, key)
-            end
+    --- Validar cada Nodo
+    for i = Data.gMOD.check_power, Data.gMOD.check_power + This_MOD.check_per_tick do
+        --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+        --- Validar el índice del jugador
+        local Node = Data.Nodes[i]
+        if not Node then
+            Data.gMOD.check_power = 1
+            break
         end
 
-        --- Eliminar a las entidad invalidas
-        for _, key in pairs(Deleted) do
-            local Node = gForce.nodes[key]
-            table.remove(gForce.nodes, key)
+        --- Validar que la entidad siga existiendo
+        if Node.entity and Node.entity.valid then
+            Data.gMOD.check_power = Data.gMOD.check_power + 1
+            check_power(Node)
+        else
+            table.insert(Deleted, 1, Data.gMOD.check_power)
+        end
 
-            if Node.type == This_MOD.id_sender then
-                Node.filter_red.destroy()
-                Node.filter_green.destroy()
-            end
+        --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+    end
+
+    --- Eliminar a las entidad invalidas
+    for _, key in pairs(Deleted) do
+        local Node = Data.Nodes[key]
+        table.remove(Data.Nodes, key)
+
+        if Node.type == This_MOD.id_sender then
+            Node.filter_red.destroy()
+            Node.filter_green.destroy()
         end
     end
 
@@ -1262,13 +1277,47 @@ end
 function This_MOD.validate_gui()
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
-    for player_index, gPlayer in pairs(This_MOD.create_data().gPlayers) do
-        This_MOD.validate_entity(
-            This_MOD.create_data({
-                entity = gPlayer.GUI.entity,
-                player_index = player_index
-            })
-        )
+    --- Variable a usar
+    local Data = This_MOD.create_data()
+    local Last = Data.gMOD.check_GUI + This_MOD.check_per_tick
+
+    --- Validar cada GUI
+    while Data.gMOD.check_GUI <= Last do
+        --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+        --- Validar el índice del jugador
+        local Player_index = Data.Players_index[Data.gMOD.check_GUI]
+        if Player_index then
+            Data.gMOD.check_GUI = Data.gMOD.check_GUI + 1
+        else
+            Data.gMOD.check_GUI = 1
+            return
+        end
+
+        --- Cargar la información del jugador
+        local gPlayer = Data.gPlayers[Player_index]
+
+        --- Cerrar el GUI si la entidad ya no es válida
+        if gPlayer.GUI.frame_main and gPlayer.GUI.frame_main.valid then
+            This_MOD.validate_entity(
+                This_MOD.create_data({
+                    entity = gPlayer.GUI.entity,
+                    player_index = Player_index
+                })
+            )
+        end
+
+        --- Cerrar el GUI si el jugador está lejos de la entidad
+        if gPlayer.GUI.frame_main and gPlayer.GUI.frame_main.valid then
+            This_MOD.validate_distance(
+                This_MOD.create_data({
+                    entity = gPlayer.GUI.entity,
+                    player_index = Player_index
+                })
+            )
+        end
+
+        --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
     end
 
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
@@ -1448,6 +1497,28 @@ function This_MOD.create_data(event)
 
 
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+    --- Variables globales
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+    --- Indice de los jugadores
+    Data.gMOD.players_index = Data.gMOD.players_index or {}
+    Data.Players_index = Data.gMOD.players_index
+
+    --- Antenas
+    Data.gMOD.nodes = Data.gMOD.nodes or {}
+    Data.Nodes = Data.gMOD.nodes
+
+    --- Revisar el siguiente bloque de antenas
+    Data.gMOD.check_power = Data.gMOD.check_power or 1
+    Data.gMOD.check_GUI = Data.gMOD.check_GUI or 1
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+
+
+
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
     --- Validación
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
@@ -1468,13 +1539,14 @@ function This_MOD.create_data(event)
     Data.gForce.channels = Data.gForce.channels or {}
     Data.Channels = Data.gForce.channels
 
-    --- Antenas
-    Data.gForce.nodes = Data.gForce.nodes or {}
-    Data.Nodes = Data.gForce.nodes
-
     --- Auxiliar
     Data.gForce.ghosts = Data.gForce.ghosts or {}
     Data.Ghosts = Data.gForce.ghosts
+
+    --- Agregar el jugador al índice
+    if Data.Player and not GMOD.get_key(Data.Players_index, Data.Player.index) then
+        table.insert(Data.Players_index, Data.Player.index)
+    end
 
     --- Cargar el nodo a tratar
     if Data.Entity or Data.GUI then
@@ -1660,6 +1732,47 @@ function This_MOD.validate_entity(Data)
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
     return true
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+end
+
+function This_MOD.validate_distance(Data)
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+    --- Renombrar
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+    local pPos = Data.Player.position
+    local ePos = Data.GUI.entity.position
+    local Distance_max = Data.Player.build_distance
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+
+
+
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+    --- Calcular la distancia entre el jugador y la entidad
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+    local dX = pPos.x - ePos.x
+    local dY = pPos.y - ePos.y
+    local Distance = math.sqrt(dX * dX + dY * dY) - 1.2
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+
+
+
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+    --- Cerrar el GUI si el jugador está lejos de la entidad
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+    if Distance > Distance_max then
+        Data.GUI.action = This_MOD.action.close_force
+        This_MOD.toggle_gui(Data)
+    end
 
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 end
