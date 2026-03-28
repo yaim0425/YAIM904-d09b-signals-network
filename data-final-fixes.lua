@@ -100,7 +100,8 @@ function This_MOD.reference_values()
     This_MOD.name_tech = This_MOD.prefix .. "transmission-tech"
 
     --- Ruta a los multimedias
-    This_MOD.path_graphics = "__" .. This_MOD.prefix .. This_MOD.name .. "__/graphics/"
+    This_MOD.path_graphics = "__" .. This_MOD.prefix .. This_MOD.name .. "__/aai-signal-transmission_0.5.1/graphics/"
+    This_MOD.path_graphics = "__aai-signal-transmission__/graphics/"
     This_MOD.path_sound = "__" .. This_MOD.prefix .. This_MOD.name .. "__/sound/"
 
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
@@ -180,14 +181,14 @@ function This_MOD.create_item(space)
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
     local Sender = GMOD.copy(space.item)
-    Sender.icons = { { icon = This_MOD.path_graphics .. "item-sender.png" } }
+    Sender.icons = { { icon = This_MOD.path_graphics .. "icons/signal-sender.png" } }
     Sender.order = "910"
 
     Sender.name = This_MOD.name_sender
     Sender.place_result = This_MOD.name_sender
 
-    Sender.localised_name = { "", { "entity-name." .. Sender.name } }
-    Sender.localised_description = { "", { "entity-description." .. Sender.name } }
+    Sender.localised_name = { "", { "entity-name.aai-signal-sender" } }
+    Sender.localised_description = { "", { "entity-description.aai-signal-sender" } }
 
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
@@ -200,14 +201,14 @@ function This_MOD.create_item(space)
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
     local Receiver = GMOD.copy(space.item)
-    Receiver.icons = { { icon = This_MOD.path_graphics .. "item-receiver.png" } }
+    Receiver.icons = { { icon = This_MOD.path_graphics .. "icons/signal-receiver.png" } }
     Receiver.order = "920"
 
     Receiver.name = This_MOD.name_receiver
     Receiver.place_result = This_MOD.name_receiver
 
-    Receiver.localised_name = { "", { "entity-name." .. Receiver.name } }
-    Receiver.localised_description = { "", { "entity-description." .. Receiver.name } }
+    Receiver.localised_name = { "", { "entity-name.aai-signal-receiver" } }
+    Receiver.localised_description = { "", { "entity-description.aai-signal-receiver" } }
 
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
@@ -235,10 +236,10 @@ function This_MOD.create_entity(space)
         type = "roboport",
         name = This_MOD.name_sender,
 
-        localised_name = { "", { "entity-name." .. This_MOD.name_sender } },
-        localised_description = { "", { "entity-description." .. This_MOD.name_sender } },
+        localised_name = { "", { "entity-name.aai-signal-sender" } },
+        localised_description = { "", { "entity-description.aai-signal-sender" } },
 
-        icons = { { icon = This_MOD.path_graphics .. "item-sender.png" } },
+        icons = { { icon = This_MOD.path_graphics .. "icons/signal-sender.png" } },
 
         collision_box = { { -2.3, -2.3 }, { 2.3, 2.3 } },
         selection_box = { { -2.5, -2.5 }, { 2.5, 2.5 } },
@@ -260,7 +261,7 @@ function This_MOD.create_entity(space)
         base_animation = {
             layers = {
                 {
-                    filename = This_MOD.path_graphics .. "entity-sender.png",
+                    filename = This_MOD.path_graphics .. "entity/signal-sender/signal-sender.png",
                     shift = util.by_pixel(6, -13),
                     animation_speed = 0.18,
                     frame_count = 64,
@@ -273,7 +274,7 @@ function This_MOD.create_entity(space)
                 },
                 {
                     draw_as_shadow = true,
-                    filename = This_MOD.path_graphics .. "entity-sender-shadow.png",
+                    filename = This_MOD.path_graphics .. "entity/signal-sender/signal-sender-shadow.png",
                     shift = util.by_pixel(33, 10),
                     frame_count = 64,
                     priority = "high",
@@ -362,10 +363,10 @@ function This_MOD.create_entity(space)
         type = "roboport",
         name = This_MOD.name_receiver,
 
-        localised_name = { "", { "entity-name." .. This_MOD.name_receiver } },
-        localised_description = { "", { "entity-description." .. This_MOD.name_receiver } },
+        localised_name = { "", { "entity-name.aai-signal-receiver" } },
+        localised_description = { "", { "entity-description.aai-signal-receiver" } },
 
-        icons = { { icon = This_MOD.path_graphics .. "item-receiver.png" } },
+        icons = { { icon = This_MOD.path_graphics .. "icons/signal-receiver.png" } },
 
         collision_box = { { -4.3, -4.3 }, { 4.3, 4.3 } },
         selection_box = { { -4.5, -4.5 }, { 4.5, 4.5 } },
@@ -387,7 +388,7 @@ function This_MOD.create_entity(space)
         base_animation = {
             layers = {
                 {
-                    filename = This_MOD.path_graphics .. "entity-receiver.png",
+                    filename = This_MOD.path_graphics .. "entity/signal-receiver/signal-receiver.png",
                     shift = util.by_pixel(1, -26),
                     animation_speed = 0.15,
                     frame_count = 64,
@@ -399,7 +400,7 @@ function This_MOD.create_entity(space)
                 },
                 {
                     draw_as_shadow = true,
-                    filename = This_MOD.path_graphics .. "entity-receiver-shadow.png",
+                    filename = This_MOD.path_graphics .. "entity/signal-receiver/signal-receiver-shadow.png",
                     shift = util.by_pixel(25, 19),
                     frame_count = 64,
                     priority = "high",
@@ -641,14 +642,14 @@ function This_MOD.create_tech(space)
     local Tech = {
         type = "technology",
         name = This_MOD.name_tech,
-        localised_name = { "", { "technology-name." .. This_MOD.prefix .. "transmission" } },
-        localised_description = { "", { "technology-description." .. This_MOD.prefix .. "transmission" } },
+        localised_name = { "", { "technology-name.aai-signal-transmission" } },
+        localised_description = { "", { "technology-description.aai-signal-transmission" } },
         effects = {
             { type = "unlock-recipe", recipe = This_MOD.name_sender },
             { type = "unlock-recipe", recipe = This_MOD.name_receiver }
         },
         icons = { {
-            icon = This_MOD.path_graphics .. "tech.png",
+            icon = This_MOD.path_graphics .. "technology/signal-transmission.png",
             icon_size = 256
         } },
         order = "e-g",
@@ -879,7 +880,7 @@ function This_MOD.load_icon()
         type = "virtual-signal",
         name = Name,
         localised_name = "",
-        icon = This_MOD.path_graphics .. "icon.png",
+        icon = This_MOD.path_graphics .. "icons/select-icon-black.png",
         icon_size = 40,
         subgroup = "virtual-signal",
         order = "z-z-o"
@@ -912,18 +913,6 @@ end
 ---------------------------------------------------------------------------------------------------
 
 function This_MOD.hidden___Earendel()
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-    --- Validación
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-
-    if not mods["aai-signal-transmission"] then return end
-
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-
-
-
-
-
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
     --- Ocultar las creaciones los elementos
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---

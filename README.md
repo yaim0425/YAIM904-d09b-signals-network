@@ -31,7 +31,7 @@ Signals behave exactly like standard circuit network signals, just without dista
 
 * 🚨 **This MOD completely breaks circuit network limitations**
 * 📡 Enables instant global logic and automation
-* 🔁 **If [AAI Signal Transmission](https://mods.factorio.com/mod/aai-signal-transmission) by Earendel is also active, this MOD will replace its functionality while both are enabled**
+* 🔁 **This MOD will replace all items and entities of [AAI Signal Transmission](https://mods.factorio.com/mod/aai-signal-transmission) by Earendel**
 * 🧪 Recommended for:
 
   * Sandbox and creative gameplay
@@ -49,6 +49,8 @@ Signals behave exactly like standard circuit network signals, just without dista
 **Required**
 
 [YAIM904 d00b Core](https://github.com/yaim0425/YAIM904-d00b-core)
+
+[AAI Signal Transmission](https://mods.factorio.com/mod/aai-signal-transmission)
 
 ---
 
