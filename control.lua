@@ -1753,7 +1753,6 @@ function This_MOD.validate_distance(Data)
     local pPos = Data.Player.position
     local ePos = (Data.GUI.entity or Data.Entity).position
     local Distance_max = Data.Player.build_distance
-    local Bonus = Data.Force_player.character_reach_distance_bonus + 3.5
 
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
@@ -1769,14 +1768,6 @@ function This_MOD.validate_distance(Data)
     local dY = math.abs(pPos.y - ePos.y)
     local Distance = math.sqrt(dX * dX + dY * dY)
 
-    -- GMOD.var_dump({
-    --     pPos = pPos,
-    --     ePos = ePos,
-    --     Distance_max = Distance_max,
-    --     character_reach_distance_bonus = Bonus,
-    --     distance = Distance
-    -- })
-
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
 
@@ -1787,7 +1778,7 @@ function This_MOD.validate_distance(Data)
     --- Cerrar el GUI si el jugador está lejos de la entidad
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
-    if Distance > Distance_max + Bonus then
+    if Distance > Distance_max then
         if Data.GUI.frame_main then
             Data.GUI.action = This_MOD.action.close_force
             This_MOD.toggle_gui(Data)
