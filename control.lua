@@ -190,7 +190,9 @@ function This_MOD.load_events()
     --- Acciones por tiempo
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
-    script.on_nth_tick(20, function()
+    script.on_event({
+        defines.events.on_tick
+    }, function()
         --- La entidad tenga energía
         This_MOD.check_power()
 
@@ -429,6 +431,23 @@ function This_MOD.toggle_gui(Data)
 
 
         --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+        --- Destro del rango permitido
+        --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+        if
+            not Data.GUI.frame_main and
+            not This_MOD.validate_distance(Data)
+        then
+            return false
+        end
+
+        --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+
+
+
+
+        --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
         --- En caso de ser necesaria
         --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
@@ -512,7 +531,7 @@ function This_MOD.toggle_gui(Data)
         Data.GUI.label_title = {}
         Data.GUI.label_title.type = "label"
         Data.GUI.label_title.name = "title"
-        Data.GUI.label_title.caption = { "entity-name." .. Data.Entity.name }
+        Data.GUI.label_title.caption = Data.Entity.localised_name
         Data.GUI.label_title = Data.GUI.flow_head.add(Data.GUI.label_title)
         Data.GUI.label_title.style = Prefix .. "label_title"
 
@@ -1732,7 +1751,7 @@ function This_MOD.validate_distance(Data)
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
     local pPos = Data.Player.position
-    local ePos = Data.GUI.entity.position
+    local ePos = (Data.GUI.entity or Data.Entity).position
     local Distance_max = Data.Player.build_distance
 
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
@@ -1745,9 +1764,9 @@ function This_MOD.validate_distance(Data)
     --- Calcular la distancia entre el jugador y la entidad
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
-    local dX = pPos.x - ePos.x
-    local dY = pPos.y - ePos.y
-    local Distance = math.sqrt(dX * dX + dY * dY) - 1.2
+    local dX = math.abs(pPos.x - ePos.x)
+    local dY = math.abs(pPos.y - ePos.y)
+    local Distance = math.sqrt(dX * dX + dY * dY)
 
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
@@ -1760,9 +1779,13 @@ function This_MOD.validate_distance(Data)
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
     if Distance > Distance_max then
-        Data.GUI.action = This_MOD.action.close_force
-        This_MOD.toggle_gui(Data)
+        if Data.GUI.frame_main then
+            Data.GUI.action = This_MOD.action.close_force
+            This_MOD.toggle_gui(Data)
+        end
+        return false
     end
+    return true
 
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 end
