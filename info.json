@@ -1,4 +1,4 @@
-﻿{
+{
     "name":  "YAIM904-d09b-signals-network",
     "version":  "0.0.5",
     "title":  "YAIM904 d09b Signals network",
@@ -8,6 +8,6 @@
     "homepage":  "https://github.com/yaim0425/YAIM904-d09b-signals-network",
     "dependencies":  [
         "YAIM904-d00b-core",
-        "aai-signal-transmission \u003e= 0.5.1"
+        "aai-signal-transmission >= 0.5.1"
     ]
 }
