@@ -49,7 +49,7 @@ function This_MOD.reference_values()
     This_MOD.id_receiver = "A02A"
 
     --- Nombre del combinador
-    This_MOD.combinator_name = This_MOD.prefix .. GMOD.entities["decider-combinator"].name
+    This_MOD.combinator_name = This_MOD.prefix .. GMOD.entity["decider-combinator"].name
 
     --- Antenas a revisar por tick
     This_MOD.check_per_tick = 2

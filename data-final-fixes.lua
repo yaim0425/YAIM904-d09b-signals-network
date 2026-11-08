@@ -28,7 +28,7 @@ function This_MOD.start()
     --- Modificar los elementos
     for _, spaces in pairs(This_MOD.to_be_processed) do
         for _, space in pairs(spaces) do
-            --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+            --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
             --- Crear los elementos
             This_MOD.create_item(space)
@@ -36,7 +36,7 @@ function This_MOD.start()
             This_MOD.create_recipe(space)
             This_MOD.create_tech(space)
 
-            --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+            --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
         end
     end
 
@@ -47,9 +47,6 @@ function This_MOD.start()
 
     --- Ocultar elementos
     This_MOD.hidden___Earendel()
-
-    --- Fijar las posiciones actual
-    GMOD.d00b.change_orders()
 
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 end
@@ -100,9 +97,15 @@ function This_MOD.reference_values()
     This_MOD.name_tech = This_MOD.prefix .. "transmission-tech"
 
     --- Ruta a los multimedias
-    This_MOD.path_graphics = "__" .. This_MOD.prefix .. This_MOD.name .. "__/aai-signal-transmission_0.5.1/graphics/"
-    This_MOD.path_graphics = "__aai-signal-transmission__/graphics/"
     This_MOD.path_sound = "__" .. This_MOD.prefix .. This_MOD.name .. "__/sound/"
+
+    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+    --- Valores originales
+    This_MOD.aai_sender = "aai-signal-sender"
+    This_MOD.aai_receiver = "aai-signal-receiver"
+    This_MOD.aai_filter = "aai-filter"
+    This_MOD.aai_tech = "aai-signal-transmission"
 
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 end
@@ -122,8 +125,8 @@ function This_MOD.get_elements()
     --- Validación
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
-    if GMOD.entities[This_MOD.name_sender] then return end
-    if GMOD.entities[This_MOD.name_receiver] then return end
+    if GMOD.entity[This_MOD.name_sender] then return end
+    if GMOD.entity[This_MOD.name_receiver] then return end
 
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
@@ -136,13 +139,21 @@ function This_MOD.get_elements()
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
     local Space = {}
-    Space.combinator = GMOD.entities["decider-combinator"]
-    Space.item = GMOD.get_item_create(Space.combinator, "place_result")
-    Space.entity = GMOD.entities["radar"]
+    Space.filter = data.raw["decider-combinator"][This_MOD.aai_filter]
+    Space.tech = data.raw.technology[This_MOD.aai_tech]
 
-    Space.recipe = GMOD.recipes[Space.item.name]
-    Space.tech = GMOD.get_technology(Space.recipe)
-    Space.recipe = Space.recipe and Space.recipe[1] or nil
+    Space.entity_sender = GMOD.entity[This_MOD.aai_sender]
+    Space.entity_receiver = GMOD.entity[This_MOD.aai_receiver]
+
+    Space.item_sender = GMOD.item[This_MOD.aai_sender]
+    Space.item_receiver = GMOD.item[This_MOD.aai_receiver]
+
+    Space.recipe_sender = data.raw.recipe[This_MOD.aai_sender]
+    Space.recipe_receiver = data.raw.recipe[This_MOD.aai_receiver]
+
+    for key, value in pairs(Space) do
+        Space[key] = GMOD.copy_with_format(value)
+    end
 
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
@@ -154,8 +165,7 @@ function This_MOD.get_elements()
     --- Validación
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
-    if not Space.combinator then return end
-    if not Space.entity then return end
+    if GMOD.get_length(Space) ~= 8 then return end
 
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
@@ -168,7 +178,7 @@ function This_MOD.get_elements()
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 
     This_MOD.to_be_processed.entities = This_MOD.to_be_processed.entities or {}
-    This_MOD.to_be_processed.entities[Space.entity.name] = Space
+    This_MOD.to_be_processed.entities[Space.filter.name] = Space
 
     --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 end
@@ -176,513 +186,66 @@ end
 ---------------------------------------------------------------------------------------------------
 
 function This_MOD.create_item(space)
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
     --- Emisor
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-
-    local Sender = GMOD.copy(space.item)
-    Sender.icons = { { icon = This_MOD.path_graphics .. "icons/signal-sender.png" } }
-    Sender.order = "910"
-
+    local Sender = space.item_sender
     Sender.name = This_MOD.name_sender
     Sender.place_result = This_MOD.name_sender
 
-    Sender.localised_name = { "", { "entity-name.aai-signal-sender" } }
-    Sender.localised_description = { "", { "entity-description.aai-signal-sender" } }
-
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-
-
-
-
-
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
     --- Receptor
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-
-    local Receiver = GMOD.copy(space.item)
-    Receiver.icons = { { icon = This_MOD.path_graphics .. "icons/signal-receiver.png" } }
-    Receiver.order = "920"
-
+    local Receiver = space.item_receiver
     Receiver.name = This_MOD.name_receiver
     Receiver.place_result = This_MOD.name_receiver
 
-    Receiver.localised_name = { "", { "entity-name.aai-signal-receiver" } }
-    Receiver.localised_description = { "", { "entity-description.aai-signal-receiver" } }
-
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-
-
-
-
-
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
     --- Crear el prototipo
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-
     GMOD.extend(Sender, Receiver)
-
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 end
 
 function This_MOD.create_entity(space)
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
     --- Emisor
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+    local Sender = space.entity_sender
+    Sender.minable.results[1].name = This_MOD.name_sender
+    Sender.name = This_MOD.name_sender
 
-    local Sender = {
-        --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-
-        type = "roboport",
-        name = This_MOD.name_sender,
-
-        localised_name = { "", { "entity-name.aai-signal-sender" } },
-        localised_description = { "", { "entity-description.aai-signal-sender" } },
-
-        icons = { { icon = This_MOD.path_graphics .. "icons/signal-sender.png" } },
-
-        collision_box = { { -2.3, -2.3 }, { 2.3, 2.3 } },
-        selection_box = { { -2.5, -2.5 }, { 2.5, 2.5 } },
-        drawing_box = { { -2.5, -2.9 }, { 2.5, 2.5 } },
-
-        max_health = 400,
-
-        energy_usage = "10MW",
-        recharge_minimum = "5MJ",
-        charging_energy = "5MW",
-
-        energy_source = {
-            type = "electric",
-            usage_priority = "secondary-input",
-            input_flow_limit = "1GW",
-            buffer_capacity = "5MJ"
-        },
-
-        base_animation = {
-            layers = {
-                {
-                    filename = This_MOD.path_graphics .. "entity/signal-sender/signal-sender.png",
-                    shift = util.by_pixel(6, -13),
-                    animation_speed = 0.18,
-                    frame_count = 64,
-                    priority = "high",
-                    height = 3232 / 8,
-                    width = 2880 / 8,
-                    line_length = 8,
-                    scale = 0.5
-
-                },
-                {
-                    draw_as_shadow = true,
-                    filename = This_MOD.path_graphics .. "entity/signal-sender/signal-sender-shadow.png",
-                    shift = util.by_pixel(33, 10),
-                    frame_count = 64,
-                    priority = "high",
-                    height = 2224 / 8,
-                    width = 3712 / 8,
-                    line_length = 8,
-                    scale = 0.5
-                }
-            }
-        },
-
-        circuit_connector = {
-            points = {
-                shadow = {
-                    green = { -1.5, 2.2 },
-                    red = { -1.5, 2.2 }
-                },
-                wire = {
-                    green = { -2, 1.7 },
-                    red = { -2, 1.7 }
-                }
-            }
-        },
-
-        minable = {
-            mining_time = 0.2,
-            results = { {
-                type = "item",
-                name = This_MOD.name_sender,
-                amount = 1
-            } }
-        },
-
-        --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-
-        dying_explosion = "medium-explosion",
-        corpse = "big-remnants",
-        flags = { "placeable-player", "player-creation" },
-
-        logistics_radius = 0,
-        robot_slots_count = 0,
-        construction_radius = 0,
-        material_slots_count = 0,
-        charge_approach_distance = 0,
-
-        drawing_box_vertical_extension = 1,
-        draw_logistic_radius_visualization = false,
-        draw_construction_radius_visualization = false,
-
-        radar_range = space.entity.max_distance_of_nearby_sector_revealed or 1,
-        request_to_open_door_timeout = 15,
-        spawn_and_station_height = -0.1,
-        circuit_wire_max_distance = 10,
-
-        vehicle_impact_sound = {
-            filename = "__base__/sound/car-metal-impact.ogg",
-            volume = 0.65
-        },
-
-        working_sound = {
-            sound = {
-                filename = "__base__/sound/roboport-working.ogg",
-                volume = 0.6
-            },
-            max_sounds_per_type = 3,
-            audible_distance_modifier = 0.5,
-            probability = 1 / (15 * 60)
-        },
-
-        --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-    }
-
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-
-
-
-
-
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
     --- Receptor
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+    local Receiver = space.entity_receiver
+    Receiver.minable.results[1].name = This_MOD.name_receiver
+    Receiver.name = This_MOD.name_receiver
 
-    local Receiver = {
-        --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-
-        type = "roboport",
-        name = This_MOD.name_receiver,
-
-        localised_name = { "", { "entity-name.aai-signal-receiver" } },
-        localised_description = { "", { "entity-description.aai-signal-receiver" } },
-
-        icons = { { icon = This_MOD.path_graphics .. "icons/signal-receiver.png" } },
-
-        collision_box = { { -4.3, -4.3 }, { 4.3, 4.3 } },
-        selection_box = { { -4.5, -4.5 }, { 4.5, 4.5 } },
-        drawing_box = { { -4.5, -4.9 }, { 4.5, 4.5 } },
-
-        max_health = 800,
-
-        energy_usage = "2MW",
-        recharge_minimum = "1MJ",
-        charging_energy = "1MW",
-
-        energy_source = {
-            type = "electric",
-            usage_priority = "secondary-input",
-            input_flow_limit = "1GW",
-            buffer_capacity = "1MJ"
-        },
-
-        base_animation = {
-            layers = {
-                {
-                    filename = This_MOD.path_graphics .. "entity/signal-receiver/signal-receiver.png",
-                    shift = util.by_pixel(1, -26),
-                    animation_speed = 0.15,
-                    frame_count = 64,
-                    priority = "high",
-                    height = 5440 / 8,
-                    width = 4688 / 8,
-                    line_length = 8,
-                    scale = 0.5
-                },
-                {
-                    draw_as_shadow = true,
-                    filename = This_MOD.path_graphics .. "entity/signal-receiver/signal-receiver-shadow.png",
-                    shift = util.by_pixel(25, 19),
-                    frame_count = 64,
-                    priority = "high",
-                    height = 4800 / 8,
-                    width = 5440 / 8,
-                    line_length = 8,
-                    scale = 0.5
-                }
-            }
-        },
-
-        circuit_connector = {
-            points = {
-                shadow = {
-                    green = { -2.5, 4.2 },
-                    red = { -2.7, 4 }
-                },
-                wire = {
-                    green = { -3.5, 3.2 },
-                    red = { -3.7, 3 }
-                }
-            }
-        },
-
-        minable = {
-            mining_time = 0.5,
-            results = { {
-                type = "item",
-                name = This_MOD.name_receiver,
-                amount = 1
-            } }
-        },
-
-        --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-
-        dying_explosion = "medium-explosion",
-        corpse = "big-remnants",
-        flags = { "placeable-player", "player-creation" },
-
-        logistics_radius = 0,
-        robot_slots_count = 0,
-        construction_radius = 0,
-        material_slots_count = 0,
-        charge_approach_distance = 0,
-
-        drawing_box_vertical_extension = 1,
-        draw_logistic_radius_visualization = false,
-        draw_construction_radius_visualization = false,
-
-        radar_range = space.entity.max_distance_of_nearby_sector_revealed or 1,
-        request_to_open_door_timeout = 15,
-        spawn_and_station_height = -0.1,
-        circuit_wire_max_distance = 10,
-
-        vehicle_impact_sound = {
-            filename = "__base__/sound/car-metal-impact.ogg",
-            volume = 0.65
-        },
-        working_sound = {
-            sound = {
-                filename = "__base__/sound/roboport-working.ogg",
-                volume = 0.6
-            },
-            max_sounds_per_type = 3,
-            audible_distance_modifier = 0.5,
-            probability = 1 / (15 * 60)
-        },
-
-        --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-    }
-
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-
-
-
-
-
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
     --- Combinador
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+    local Filter = space.filter
+    Filter.minable.results = nil
+    Filter.name = This_MOD.prefix .. Filter.type
 
-    local Direction = {
-        north = util.empty_sprite(),
-        east = util.empty_sprite(),
-        south = util.empty_sprite(),
-        west = util.empty_sprite()
-    }
-
-    local Connection_points = {
-        {
-            shadow = { red = { 0, 0 }, green = { 0, 0 } },
-            wire = { red = { 0, 0 }, green = { 0, 0 } }
-        },
-        {
-            shadow = { red = { 0, 0 }, green = { 0, 0 } },
-            wire = { red = { 0, 0 }, green = { 0, 0 } }
-        },
-        {
-            shadow = { red = { 0, 0 }, green = { 0, 0 } },
-            wire = { red = { 0, 0 }, green = { 0, 0 } }
-        },
-        {
-            shadow = { red = { 0, 0 }, green = { 0, 0 } },
-            wire = { red = { 0, 0 }, green = { 0, 0 } }
-        }
-    }
-
-    local Light_offsets = {
-        { 0, 0 },
-        { 0, 0 },
-        { 0, 0 },
-        { 0, 0 }
-    }
-
-    local Combinator = {
-        type = "decider-combinator",
-        name = This_MOD.prefix .. space.combinator.name,
-
-        localised_name = "",
-        localised_description = "",
-
-        icons = { { icon = "__base__/graphics/icons/decider-combinator.png" } },
-
-        collision_box = { { 0, 0 }, { 0, 0 } },
-        selection_box = { { 0, 0 }, { 0, 0 } },
-
-        max_health = 1,
-
-        energy_source = { type = "void" },
-        active_energy_usage = "1W",
-
-        circuit_wire_max_distance = 9,
-        selectable_in_game = false,
-        hidden = true,
-        flags = { "not-on-map" },
-
-        sprites = Direction,
-        activity_led_sprites = Direction,
-        activity_led_light = { intensity = 0, size = 0 },
-        screen_light_offsets = Light_offsets,
-        activity_led_light_offsets = Light_offsets,
-
-        input_connection_bounding_box = { { -0.5, -0.5 }, { 0.5, 0.5 } },
-        output_connection_bounding_box = { { -0.5, -0.5 }, { 0.5, 0.5 } },
-
-        circuit_wire_connection_points = Connection_points,
-        output_connection_points = Connection_points,
-        input_connection_points = Connection_points
-    }
-
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-
-
-
-
-
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
     --- Crear el prototipo
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-
-    GMOD.extend(Sender, Receiver, Combinator)
-
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+    GMOD.extend(Sender, Receiver, Filter)
 end
 
 function This_MOD.create_recipe(space)
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
     --- Emisor
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-
-    local Sender = {}
-    Sender.type = "recipe"
+    local Sender = space.recipe_sender
     Sender.name = This_MOD.name_sender
-    Sender.energy_required = 10
-    Sender.enabled = false
-    Sender.subgroup = GMOD.items[This_MOD.name_sender].subgroup
-    Sender.order = GMOD.items[This_MOD.name_sender].order
-    Sender.ingredients = {
-        { type = "item", name = "processing-unit",      amount = 20 },
-        { type = "item", name = "battery",              amount = 20 },
-        { type = "item", name = "steel-plate",          amount = 10 },
-        { type = "item", name = "electric-engine-unit", amount = 10 },
-    }
-    Sender.results = { {
-        type = "item",
-        name = This_MOD.name_sender,
-        amount = 1
-    } }
+    Sender.results[1].name = This_MOD.name_sender
 
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-
-
-
-
-
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
     --- Receptor
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-
-    local Receiver = {}
-    Receiver.type = "recipe"
+    local Receiver = space.recipe_receiver
     Receiver.name = This_MOD.name_receiver
-    Receiver.energy_required = 10
-    Receiver.enabled = false
-    Receiver.subgroup = GMOD.items[This_MOD.name_receiver].subgroup
-    Receiver.order = GMOD.items[This_MOD.name_receiver].order
-    Receiver.ingredients = {
-        { type = "item", name = "processing-unit",      amount = 20 },
-        { type = "item", name = "copper-plate",         amount = 20 },
-        { type = "item", name = "steel-plate",          amount = 20 },
-        { type = "item", name = "electric-engine-unit", amount = 10 },
-    }
-    Receiver.results = { {
-        type = "item",
-        name = This_MOD.name_receiver,
-        amount = 1
-    } }
+    Receiver.results[1].name = This_MOD.name_receiver
 
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-
-
-
-
-
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
     --- Crear el prototipo
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-
     GMOD.extend(Sender, Receiver)
-
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 end
 
 function This_MOD.create_tech(space)
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
     --- Tecnología base
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-
-    local Tech = {
-        type = "technology",
-        name = This_MOD.name_tech,
-        localised_name = { "", { "technology-name.aai-signal-transmission" } },
-        localised_description = { "", { "technology-description.aai-signal-transmission" } },
-        effects = {
-            { type = "unlock-recipe", recipe = This_MOD.name_sender },
-            { type = "unlock-recipe", recipe = This_MOD.name_receiver }
-        },
-        icons = { {
-            icon = This_MOD.path_graphics .. "technology/signal-transmission.png",
-            icon_size = 256
-        } },
-        order = "e-g",
-        prerequisites = {
-            "processing-unit",
-            "electric-engine",
-            "circuit-network"
-        },
-        unit = {
-            count = 100,
-            time = 30,
-            ingredients = {
-                { "automation-science-pack", 1 },
-                { "logistic-science-pack",   1 },
-                { "chemical-science-pack",   1 },
-                mods["space-age"] and { "space-science-pack", 1 } or nil
-            }
-        }
+    local Tech = space.tech
+    Tech.name = This_MOD.name_tech
+    Tech.effects = {
+        { type = "unlock-recipe", recipe = This_MOD.name_sender },
+        { type = "unlock-recipe", recipe = This_MOD.name_receiver }
     }
 
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-
-
-
-
-
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
     --- Crear el prototipo
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
-
     GMOD.extend(Tech)
-
-    --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -922,19 +485,17 @@ function This_MOD.hidden___Earendel()
         "aai-signal-receiver",
         "aai-filter"
     }) do
-        local Item = GMOD.items[name] or {}
-        local Entity = GMOD.entities[name] or {}
-        local Recipes = GMOD.recipes[name] or {}
+        local Item = GMOD.item[name] or {}
+        local Entity = GMOD.entity[name] or {}
+        local Recipe = data.raw.recipe[name] or {}
 
         Item.hidden = true
         Entity.hidden = true
-        for _, recipe in pairs(Recipes) do
-            recipe.hidden = true
-        end
+        Recipe.hidden = true
 
-        GMOD.items[name] = nil
+        GMOD.item[name] = nil
         GMOD.recipes[name] = nil
-        GMOD.entities[name] = nil
+        GMOD.entity[name] = nil
     end
 
     data.raw.technology["aai-signal-transmission"].hidden = true
